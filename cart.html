@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="libraryApp">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Cart — MPSTME Library</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+</head>
+<body ng-controller="CartController">
+
+  <nav class="navbar">
+    <div class="nav-brand">&#9676; MPSTME Library</div>
+    <div class="nav-links">
+      <a href="dashboard.html" class="nav-link">&#128218; Browse Books</a>
+      <a href="cart.html" class="nav-link active">&#128722; Cart ({{cart.length}})</a>
+      <a href="checkout.html" class="nav-link">&#128203; Borrowed</a>
+      <a href="login.html" class="nav-link" onclick="logoutUser()">Logout</a>
+    </div>
+  </nav>
+
+  <div class="page-container">
+    <div class="section-header">
+      <h2 class="section-title">&#128722; My Cart</h2>
+    </div>
+
+    <div class="card">
+      <div ng-if="cart.length == 0" class="empty-row">
+        Your cart is empty. <a href="dashboard.html">Browse books</a> to add some!
+      </div>
+
+      <div ng-if="cart.length > 0">
+        <div class="table-wrap">
+          <table class="book-table">
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Title</th>
+                <th>Subject</th>
+                <th>Author</th>
+                <th>Publisher</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr ng-repeat="item in cart">
+                <td><span class="badge">{{item.code}}</span></td>
+                <td>{{item.title}}</td>
+                <td>{{item.subject}}</td>
+                <td>{{item.author_name}}</td>
+                <td>{{item.publisher_name}}</td>
+                <td>    
+                  <button class="btn-delete" ng-click="removeFromCart($index)">Remove</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div style="margin-top:1.5rem; display:flex; align-items:center; gap:1.5rem;">
+          <span class="cart-total">Total Books: <strong>{{cart.length}}</strong></span>
+          <button class="btn-primary" ng-click="checkoutCart()">&#128203; Checkout All</button>
+          <a href="dashboard.html" class="btn-outline">+ Add More Books</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+  <script src="cart.js"></script>
+</body>
+</html>

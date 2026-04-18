@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Sign Up — MPSTME Library</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+</head>
+<body class="auth-page">
+
+  <nav class="navbar">
+    <div class="nav-brand">&#9676; MPSTME Library</div>
+    <div class="nav-links">
+      <a href="index.html" class="nav-link">Home</a>
+      <a href="login.html" class="nav-link">Login</a>
+      <a href="signup.html" class="nav-link btn-nav active">Sign Up</a>
+    </div>
+  </nav>
+
+  <div class="auth-container">
+    <div class="auth-card wide-card">
+      <div class="auth-header">
+        <div class="auth-icon">&#128100;</div>
+        <h2>Create Account</h2>
+        <p>Join the MPSTME Library System</p>
+      </div>
+
+      <div id="errorMsg" class="error-msg" style="display:none;"></div>
+      <div id="successMsg" class="success-msg" style="display:none;"></div>
+
+      <div class="role-select">
+        <div class="role-btn active" id="role-student" onclick="selectRole('student')">&#127891; Student</div>
+        <div class="role-btn" id="role-teacher" onclick="selectRole('teacher')">&#128218; Teacher</div>
+      </div>
+
+      <input type="hidden" id="role" value="student"/>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Full Name</label>
+          <input type="text" id="name" placeholder="Your full name"/>
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" id="email" placeholder="College email"/>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Phone</label>
+          <input type="text" id="phone" placeholder="10-digit phone"/>
+        </div>
+        <div class="form-group">
+          <label>Age</label>
+          <input type="number" id="age" placeholder="Your age"/>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label>Password</label>
+          <input type="password" id="password" placeholder="Min 6 characters"/>
+        </div>
+        <div class="form-group">
+          <label>SAP ID</label>
+          <input type="text" id="sap_id" placeholder="Your SAP ID"/>
+        </div>
+      </div>
+
+      <div class="form-group" id="courseDiv">
+        <label>Course</label>
+        <input type="text" id="course" placeholder="e.g. B.Tech CSE"/>
+      </div>
+
+      <div class="form-group" id="deptDiv" style="display:none;">
+        <label>Department</label>
+        <input type="text" id="department" placeholder="e.g. Computer Science"/>
+      </div>
+
+      <button class="btn-primary full-width" onclick="signupUser()">Create Account</button>
+      <p class="auth-switch">Already have an account? <a href="login.html">Login</a></p>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

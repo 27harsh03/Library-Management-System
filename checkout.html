@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="libraryApp">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Borrowed Books — MPSTME Library</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+</head>
+<body ng-controller="CheckoutController">
+
+  <nav class="navbar">
+    <div class="nav-brand">&#9676; MPSTME Library</div>
+    <div class="nav-links">
+      <a href="dashboard.html" class="nav-link">&#128218; Browse Books</a>
+      <a href="cart.html" class="nav-link">&#128722; Cart</a>
+      <a href="checkout.html" class="nav-link active">&#128203; Borrowed</a>
+      <a href="login.html" class="nav-link" onclick="logoutUser()">Logout</a>
+    </div>
+  </nav>
+
+  <div class="page-container">
+    <div class="section-header">
+      <h2 class="section-title">&#128203; Borrowed Books</h2>
+    </div>
+
+    <div class="card">
+      <div class="table-wrap">
+        <table class="book-table">
+          <thead>
+            <tr>
+              <th>Title</th>
+              <th>Borrowed On</th>
+              <th>Return By</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr ng-repeat="item in borrowed">
+              <td>{{item.title}}</td>
+              <td>{{item.checkout_date}}</td>
+              <td>{{item.return_date}}</td>
+              <td>
+                <span class="status-badge"
+                  ng-class="item.returned==1 ? 'status-available' : 'status-issued'">
+                  {{item.returned==1 ? 'Returned' : 'Borrowed'}}
+                </span>
+              </td>
+            </tr>
+            <tr ng-if="borrowed.length == 0">
+              <td colspan="4" class="empty-row">No borrowed books yet.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+  <script src="checkout.js"></script>
+</body>
+</html>

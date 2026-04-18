@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="libraryApp">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard — MPSTME Library</title>
+  <link rel="stylesheet" href="style.css"/>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+</head>
+<body ng-controller="LibraryController">
+
+  <nav class="navbar">
+    <div class="nav-brand">&#9676; MPSTME Library</div>
+    <div class="nav-links">
+      <span class="nav-user">&#128100; {{userName}} ({{userRole}})</span>
+      <a href="login.html" class="nav-link" onclick="logoutUser()">Logout</a>
+    </div>
+  </nav>
+
+  <div class="dashboard">
+
+    <!-- SIDEBAR -->
+    <div class="dash-sidebar">
+      <div class="sidebar-title">Menu</div>
+      <ul class="sidebar-menu">
+        <li class="menu-item" ng-class="{active: currentSection=='books'}"    ng-click="showSection('books')">&#128218; Browse Books</li>
+        <li class="menu-item" onclick="window.location.href='cart.html'">&#128722; My Cart ({{cartCount}})</li>
+        <li class="menu-item" ng-class="{active: currentSection=='borrowed'}" ng-click="showSection('borrowed')">&#128203; Borrowed</li>
+        <li class="menu-item" ng-class="{active: currentSection=='reviews'}"  ng-click="showSection('reviews')">&#11088; Reviews</li>
+        <li class="menu-item" ng-if="userRole=='admin'" ng-class="{active: currentSection=='admin'}" ng-click="showSection('admin')">&#9881; Admin Panel</li>
+      </ul>
+      <div class="sidebar-stats">
+        <div class="stat-item">
+          <span class="stat-num">{{books.length}}</span>
+          <span class="stat-label">Total Books</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div class="dash-main">
+
+      <!-- BROWSE BOOKS -->
+      <div ng-show="currentSection=='books'">
+        <div class="section-header">
+          <h2 class="section-title">&#128218; Browse Books</h2>
+        </div>
+        <div class="card">
+          <div class="search-bar">
+            <input type="text" ng-model="searchQuery" placeholder="&#128269; Search by title, subject or author..."/>
+          </div>
+          <div class="table-wrap">
+            <table class="book-table">
+              <thead>
+                <tr>
+                  <th>Code</th>
+                  <th>Title</th>
+                  <th>Subject</th>
+                  <th>Author</th>
+                  <th>Publisher</th>
+                  <th>Rating</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr ng-repeat="book in books | filter:searchQuery">
+                  <td><span class="badge">{{book.code}}</span></td>
+                  <td>{{book.title}}</td>
+                  <td>{{book.subject}}</td>
+                  <td>{{book.author_name}}</td>
+                  <td>{{book.publisher_name}}</td>
+                  <td>&#11088; {{book.rating || '0.0'}}</td>
+                  <td><button class="btn-add" ng-click="addToCart(book)">+ Cart</button></td>
+                </tr>
+                <tr ng-if="books.length==0">
+                  <td colspan="7" class="empty-row">No books found.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- BORROWED -->
+      <div ng-show="currentSection=='borrowed'">
+        <div class="section-header">
+          <h2 class="section-title">&#128203; Borrowed Books</h2>
+        </div>
+        <div class="card">
+          <div class="table-wrap">
+            <table class="book-table">
+              <thead>
+                <tr>
+                  <th>Title</th>
+                  <th>Borrowed On</th>
+                  <th>Return By</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr ng-repeat="item in borrowed">
+                  <td>{{item.title}}</td>
+                  <td>{{item.checkout_date}}</td>
+                  <td>{{item.return_date}}</td>
+                  <td>
+                    <span class="status-badge" ng-class="item.returned==1 ? 'status-available' : 'status-issued'">
+                      {{item.returned==1 ? 'Returned' : 'Borrowed'}}
+                    </span>
+                  </td>
+                </tr>
+                <tr ng-if="borrowed.length==0">
+                  <td colspan="4" class="empty-row">No borrowed books yet.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- REVIEWS -->
+      <div ng-show="currentSection=='reviews'">
+        <div class="section-header">
+          <h2 class="section-title">&#11088; Reviews</h2>
+        </div>
+
+        <div class="card">
+          <h3 class="card-title">Write a Review</h3>
+          <div class="form-group">
+            <label>Select Book</label>
+            <select ng-model="review.book_id">
+              <option value="">-- Select a book --</option>
+              <option ng-repeat="book in books" value="{{book.id}}">{{book.title}}</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Rating (1 to 5)</label>
+            <input type="number" ng-model="review.rating" min="1" max="5" placeholder="Enter 1 to 5"/>
+          </div>
+          <div class="form-group">
+            <label>Review</label>
+            <textarea ng-model="review.review_text" placeholder="Write your review here..." rows="3" style="width:100%;padding:10px;border:1.5px solid #ddd;border-radius:10px;font-family:inherit;font-size:0.9rem;outline:none;"></textarea>
+          </div>
+          <div id="reviewMsg" class="error-msg" style="display:none;"></div>
+          <button class="btn-primary" ng-click="submitReview()">Submit Review</button>
+        </div>
+
+        <div class="card">
+          <h3 class="card-title">All Reviews</h3>
+          <div ng-repeat="r in reviews">
+            <div class="review-card">
+              <div class="review-top">
+                <strong>{{r.book_title}}</strong>
+                <span class="review-rating">&#11088; {{r.rating}}/5</span>
+              </div>
+              <p class="review-text">{{r.review_text}}</p>
+              <p class="review-by">— {{r.user_name}}</p>
+            </div>
+          </div>
+          <div ng-if="reviews.length==0" class="empty-row">No reviews yet.</div>
+        </div>
+      </div>
+
+      <!-- ADMIN PANEL -->
+      <div ng-show="currentSection=='admin'">
+        <div class="section-header">
+          <h2 class="section-title">&#9881; Admin Panel</h2>
+        </div>
+
+        <!-- ADD AUTHOR -->
+        <div class="card">
+          <h3 class="card-title">&#43; Add Author</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Author ID</label>
+              <input type="number" ng-model="newAuthor.author_id" placeholder="e.g. 6"/>
+            </div>
+            <div class="form-group">
+              <label>Author Name</label>
+              <input type="text" ng-model="newAuthor.name" placeholder="e.g. Cormen"/>
+            </div>
+            <div style="display:flex;align-items:flex-end;padding-bottom:1rem;">
+              <button class="btn-primary" ng-click="addAuthor()">Add Author</button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table class="book-table">
+              <thead><tr><th>Author ID</th><th>Name</th></tr></thead>
+              <tbody>
+                <tr ng-repeat="a in authors">
+                  <td><span class="badge">{{a.author_id}}</span></td>
+                  <td>{{a.name}}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ADD PUBLISHER -->
+        <div class="card">
+          <h3 class="card-title">&#43; Add Publisher</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Publisher ID</label>
+              <input type="number" ng-model="newPublisher.publisher_id" placeholder="e.g. 5"/>
+            </div>
+            <div class="form-group">
+              <label>Publisher Name</label>
+              <input type="text" ng-model="newPublisher.name" placeholder="e.g. McGraw Hill"/>
+            </div>
+            <div style="display:flex;align-items:flex-end;padding-bottom:1rem;">
+              <button class="btn-primary" ng-click="addPublisher()">Add Publisher</button>
+            </div>
+          </div>
+          <div class="table-wrap">
+            <table class="book-table">
+              <thead><tr><th>Publisher ID</th><th>Name</th></tr></thead>
+              <tbody>
+                <tr ng-repeat="p in publishers">
+                  <td><span class="badge">{{p.publisher_id}}</span></td>
+                  <td>{{p.name}}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ADD BOOK -->
+        <div class="card">
+          <h3 class="card-title">&#43; Add New Book</h3>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Book Code</label>
+              <input type="text" ng-model="newBook.code" placeholder="e.g. B007" pattern="[A-Za-z]\d{3}" maxlength="4" title="1 letter followed by 3 digits (e.g. B007)"/>
+            </div>
+            <div class="form-group">
+              <label>Title</label>
+              <input type="text" ng-model="newBook.title" placeholder="Book title"/>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>Subject</label>
+              <input type="text" ng-model="newBook.subject" placeholder="e.g. Computer Science"/>
+            </div>
+            <div class="form-group">
+              <label>Author</label>
+              <select ng-model="newBook.author_id">
+                <option value="">-- Select Author --</option>
+                <option ng-repeat="a in authors" value="{{a.author_id}}">{{a.author_id}} — {{a.name}}</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label>Publisher</label>
+              <select ng-model="newBook.publisher_id">
+                <option value="">-- Select Publisher --</option>
+                <option ng-repeat="p in publishers" value="{{p.publisher_id}}">{{p.publisher_id}} — {{p.name}}</option>
+              </select>
+            </div>
+          </div>
+          <div id="bookMsg" class="error-msg" style="display:none;"></div>
+          <button class="btn-primary" ng-click="addBook()">Add Book</button>
+        </div>
+
+        <!-- ALL BOOKS -->
+        <div class="card">
+          <h3 class="card-title">&#128218; All Books</h3>
+          <div class="table-wrap">
+            <table class="book-table">
+              <thead>
+                <tr><th>Code</th><th>Title</th><th>Subject</th><th>Author</th><th>Publisher</th><th>Action</th></tr>
+              </thead>
+              <tbody>
+                <tr ng-repeat="book in books">
+                  <td><span class="badge">{{book.code}}</span></td>
+                  <td>{{book.title}}</td>
+                  <td>{{book.subject}}</td>
+                  <td>{{book.author_name}}</td>
+                  <td>{{book.publisher_name}}</td>
+                  <td><button class="btn-delete" ng-click="deleteBook(book.id)">Delete</button></td>
+                </tr>
+                <tr ng-if="books.length==0">
+                  <td colspan="6" class="empty-row">No books found.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ALL USERS -->
+        <div class="card">
+          <h3 class="card-title">&#128100; All Users</h3>
+          <div class="table-wrap">
+            <table class="book-table">
+              <thead>
+                <tr><th>Name</th><th>Email</th><th>Role</th><th>Joined</th></tr>
+              </thead>
+              <tbody>
+                <tr ng-repeat="u in allUsers">
+                  <td>{{u.name}}</td>
+                  <td>{{u.email}}</td>
+                  <td><span class="badge">{{u.role}}</span></td>
+                  <td>{{u.joined}}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- ════════════════════════════════════════════════════════
+             BORROWED BOOKS REPORT  (Admin only)
+             SQL used: checkout JOIN users JOIN books JOIN authors
+             ════════════════════════════════════════════════════════ -->
+        <div class="card">
+          <h3 class="card-title">&#128218; Borrowed Books Report</h3>
+          <p style="font-size:0.82rem;color:#888;margin:-0.5rem 0 1rem;">
+            Shows which user has borrowed which book — powered by a multi-table SQL JOIN
+            (<code>checkout ⋈ users ⋈ books ⋈ authors</code>).
+          </p>
+
+          <!-- Search / filter row -->
+          <div style="display:flex;gap:1rem;align-items:center;margin-bottom:1rem;flex-wrap:wrap;">
+            <input
+              type="text"
+              ng-model="reportFilter"
+              placeholder="&#128269; Filter by user, book, status…"
+              style="flex:1;min-width:200px;padding:9px 14px;border:1.5px solid #ddd;border-radius:10px;font-size:0.9rem;outline:none;"/>
+            <button class="btn-primary" ng-click="refreshBorrowedReport()"
+              style="white-space:nowrap;">&#8635; Refresh</button>
+          </div>
+
+          <!-- Summary badge -->
+          <p style="font-size:0.85rem;color:#555;margin-bottom:0.8rem;">
+            Total records: <strong>{{borrowedReport.length}}</strong>
+          </p>
+
+          <div class="table-wrap">
+            <table class="book-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>User Name</th>
+                  <th>Email</th>
+                  <th>Role</th>
+                  <th>Book Code</th>
+                  <th>Book Title</th>
+                  <th>Subject</th>
+                  <th>Author</th>
+                  <th>Borrowed On</th>
+                  <th>Return By</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr ng-repeat="item in borrowedReport | filter:reportFilter">
+                  <td>{{$index + 1}}</td>
+                  <td>{{item.user_name}}</td>
+                  <td style="font-size:0.8rem;color:#666;">{{item.user_email}}</td>
+                  <td><span class="badge">{{item.user_role}}</span></td>
+                  <td><span class="badge">{{item.book_code}}</span></td>
+                  <td>{{item.book_title}}</td>
+                  <td style="font-size:0.82rem;color:#666;">{{item.book_subject}}</td>
+                  <td>{{item.author_name || '—'}}</td>
+                  <td style="font-size:0.82rem;">{{item.checkout_date | date:'dd MMM yyyy'}}</td>
+                  <td style="font-size:0.82rem;">{{item.return_date}}</td>
+                  <td>
+                    <span class="status-badge"
+                      ng-class="item.returned == '1' ? 'status-available' : 'status-issued'">
+                      {{item.returned == '1' ? 'Returned' : 'Active'}}
+                    </span>
+                  </td>
+                </tr>
+                <tr ng-if="borrowedReport.length == 0">
+                  <td colspan="11" class="empty-row">No borrowing records found.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <!-- ════════════════════════════════ END Borrowed Books Report ═══ -->
+
+      </div>
+
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
